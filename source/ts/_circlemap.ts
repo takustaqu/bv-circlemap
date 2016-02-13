@@ -42,6 +42,7 @@ interface Bitt {
     onmouseup?:any;
     waveform?:any;
     display?:boolean;
+    isPlaying?:boolean;
 }
 
 
@@ -355,7 +356,7 @@ class Circlemap {
             var wavemax = 0
             bitt.waveform.forEach(function(curr,i){
                 if(curr > wavemax) wavemax = curr;
-            }
+            });
             
             var waveRatio = (sizeHalf * 0.8)/wavemax; 
             
@@ -573,8 +574,7 @@ class Circlemap {
         var count = 0;
         this._bitts.forEach(function(b,i){
             if(!!b.display) count++
-        });
-        this.layout(count);
+        });   
     }
     
     hide(idx:number):any{
@@ -585,10 +585,9 @@ class Circlemap {
         this._bitts.forEach(function(b,i){
             if(!!b.display) count++
         });
-        this.layout(count);
     }
     
-    layout(count:number){
+    layout(count?:number){
         
         var displayed = [];
         var hidden = [];
@@ -596,7 +595,7 @@ class Circlemap {
         
         this._transitionCue.forEach(function(b,i){
             b.halt();
-        })
+        });         
         
         this._bitts.forEach(function(b,i){
             if(!!b.display){
@@ -606,16 +605,20 @@ class Circlemap {
             }
         });
         
+        if(!count){
+            var count = displayed.length;
+        }
+        
         var trans = this._props.cellBaseSize + this._props.cellBeatMargin;
         switch(count){
                 case 0:
                     break;
                 case 1:
-                   aCue.push(this.animate(this._bitts[displayed[0]],{translate:{x:0,y:0},scale:1},500));
+                   aCue.push(this.animate(this._bitts[displayed[0]],{translate:{x:0,y:0},scale:1},300));
                     break;
            	    case 2:
-                   aCue.push(this.animate(this._bitts[displayed[0]],{scale:1,translate:{x:trans*-0.5,y:0}},1500))
-                   aCue.push(this.animate(this._bitts[displayed[1]],{scale:1,translate:{x:trans*0.5,y:0}},1500))
+                   aCue.push(this.animate(this._bitts[displayed[0]],{scale:1,translate:{x:trans*-0.5,y:0}},300))
+                   aCue.push(this.animate(this._bitts[displayed[1]],{scale:1,translate:{x:trans*0.5,y:0}},300))
                     break;
                 case 3:
                     var step = 360 / count
@@ -623,27 +626,27 @@ class Circlemap {
                     for(var j=0,jl=count; j < jl ; j++){
                         this._radkit.setAngle(cap+step*j);
                         var axis = this._radkit.getPosition(0,0,trans*0.7);
-                       aCue.push(this.animate(this._bitts[displayed[j]],{scale:1,translate:{x:axis.x,y:axis.y}},1500))
+                       aCue.push(this.animate(this._bitts[displayed[j]],{scale:1,translate:{x:axis.x,y:axis.y}},300))
                     }
                     break;
                 case 4:
                 case 5:
                 case 6:
-                   aCue.push(this.animate(this._bitts[displayed[0]],{scale:1,translate:{x:0,y:0}},1500))
+                   aCue.push(this.animate(this._bitts[displayed[0]],{scale:1,translate:{x:0,y:0}},300))
                     
                     var step = 360 / (count-1)
                     var cap = -90;
                     for(var j=0,jl=count-1; j < jl ; j++){
                         this._radkit.setAngle(cap+step*j);
                         var axis = this._radkit.getPosition(0,0,trans);
-                       aCue.push(this.animate(this._bitts[displayed[j+1]],{scale:1,translate:{x:axis.x,y:axis.y}},1500))
+                       aCue.push(this.animate(this._bitts[displayed[j+1]],{scale:1,translate:{x:axis.x,y:axis.y}},300))
                     }
                    
                     break;
             }
             
             for(var i=count,il=hidden.length; i < il ; i++){
-               aCue.push(this.animate(this._bitts[hidden[i]],{translate:{x:0,y:0},scale:0.01},500))
+               aCue.push(this.animate(this._bitts[hidden[i]],{translate:{x:0,y:0},scale:0.01},300))
             }
             
             this._transitionCue = aCue; 

@@ -48,7 +48,7 @@ class SonoMeasure {
         
         return {
             year:this._now.getFullYear(),
-            month:this._now.getMonth(),
+            month:this._now.getMonth()+1,
             date:this._now.getDate(),
             current:current,
             beatLength:beatLength,

@@ -480,7 +480,6 @@ var Circlemap = (function () {
             if (!!b.display)
                 count++;
         });
-        this.layout(count);
     };
     Circlemap.prototype.hide = function (idx) {
         var bitt = this._bitts[idx];
@@ -492,7 +491,6 @@ var Circlemap = (function () {
             if (!!b.display)
                 count++;
         });
-        this.layout(count);
     };
     Circlemap.prototype.layout = function (count) {
         var displayed = [];
@@ -509,16 +507,19 @@ var Circlemap = (function () {
                 hidden.push(i);
             }
         });
+        if (!count) {
+            var count = displayed.length;
+        }
         var trans = this._props.cellBaseSize + this._props.cellBeatMargin;
         switch (count) {
             case 0:
                 break;
             case 1:
-                aCue.push(this.animate(this._bitts[displayed[0]], { translate: { x: 0, y: 0 }, scale: 1 }, 500));
+                aCue.push(this.animate(this._bitts[displayed[0]], { translate: { x: 0, y: 0 }, scale: 1 }, 300));
                 break;
             case 2:
-                aCue.push(this.animate(this._bitts[displayed[0]], { scale: 1, translate: { x: trans * -0.5, y: 0 } }, 1500));
-                aCue.push(this.animate(this._bitts[displayed[1]], { scale: 1, translate: { x: trans * 0.5, y: 0 } }, 1500));
+                aCue.push(this.animate(this._bitts[displayed[0]], { scale: 1, translate: { x: trans * -0.5, y: 0 } }, 300));
+                aCue.push(this.animate(this._bitts[displayed[1]], { scale: 1, translate: { x: trans * 0.5, y: 0 } }, 300));
                 break;
             case 3:
                 var step = 360 / count;
@@ -526,24 +527,24 @@ var Circlemap = (function () {
                 for (var j = 0, jl = count; j < jl; j++) {
                     this._radkit.setAngle(cap + step * j);
                     var axis = this._radkit.getPosition(0, 0, trans * 0.7);
-                    aCue.push(this.animate(this._bitts[displayed[j]], { scale: 1, translate: { x: axis.x, y: axis.y } }, 1500));
+                    aCue.push(this.animate(this._bitts[displayed[j]], { scale: 1, translate: { x: axis.x, y: axis.y } }, 300));
                 }
                 break;
             case 4:
             case 5:
             case 6:
-                aCue.push(this.animate(this._bitts[displayed[0]], { scale: 1, translate: { x: 0, y: 0 } }, 1500));
+                aCue.push(this.animate(this._bitts[displayed[0]], { scale: 1, translate: { x: 0, y: 0 } }, 300));
                 var step = 360 / (count - 1);
                 var cap = -90;
                 for (var j = 0, jl = count - 1; j < jl; j++) {
                     this._radkit.setAngle(cap + step * j);
                     var axis = this._radkit.getPosition(0, 0, trans);
-                    aCue.push(this.animate(this._bitts[displayed[j + 1]], { scale: 1, translate: { x: axis.x, y: axis.y } }, 1500));
+                    aCue.push(this.animate(this._bitts[displayed[j + 1]], { scale: 1, translate: { x: axis.x, y: axis.y } }, 300));
                 }
                 break;
         }
         for (var i = count, il = hidden.length; i < il; i++) {
-            aCue.push(this.animate(this._bitts[hidden[i]], { translate: { x: 0, y: 0 }, scale: 0.01 }, 500));
+            aCue.push(this.animate(this._bitts[hidden[i]], { translate: { x: 0, y: 0 }, scale: 0.01 }, 300));
         }
         this._transitionCue = aCue;
     };
@@ -583,7 +584,7 @@ var SonoMeasure = (function () {
         var position = current / (24 * 60 * 60 * 1000);
         return {
             year: this._now.getFullYear(),
-            month: this._now.getMonth(),
+            month: this._now.getMonth() + 1,
             date: this._now.getDate(),
             current: current,
             beatLength: beatLength,
