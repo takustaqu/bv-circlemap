@@ -110,6 +110,7 @@ var Circlemap = (function () {
             if (!!target.onmousedown && typeof target.onmousedown == "function") {
                 target.onmousedown.call({}, target);
             }
+            return false;
         };
         this._canvas.ontouchstart = function (e) {
             var code = $this.checkObjectIdFromAxis(e.offsetX, e.offsetY);
@@ -117,10 +118,10 @@ var Circlemap = (function () {
                 return false;
             var target = $this._bitts[code];
             bittEffectiveScale(target, 1, 0.9);
-            alert("console.log");
             if (!!target.onmousedown && typeof target.onmousedown == "function") {
                 target.onmousedown.call({}, target);
             }
+            return false;
         };
         this._canvas.onmouseup = function (e) {
             var code = $this.checkObjectIdFromAxis(e.offsetX, e.offsetY);
@@ -134,6 +135,7 @@ var Circlemap = (function () {
             if (!!target.onclick && typeof target.onclick == "function") {
                 target.onclick.call({}, target);
             }
+            return false;
         };
         this._canvas.ontouchend = function (e) {
             var code = $this.checkObjectIdFromAxis(e.offsetX, e.offsetY);
@@ -147,6 +149,7 @@ var Circlemap = (function () {
             if (!!target.onclick && typeof target.onclick == "function") {
                 target.onclick.call({}, target);
             }
+            return false;
         };
         //console.log(this._ctx);
         var timer = false;
@@ -217,6 +220,9 @@ var Circlemap = (function () {
         return parseInt(r + g + b, 16) - 1;
     };
     Circlemap.prototype.bittDefaultDraw = function (bitt, ctx, centerAxis, i) {
+        if (typeof bitt.display != "undefined" && bitt.display == false) {
+            return false;
+        }
         var scale = !!bitt.scale ? (bitt.scale) : 1;
         if (!!bitt.scaleFx) {
             scale = scale * bitt.scaleFx;

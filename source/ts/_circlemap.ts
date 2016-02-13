@@ -41,6 +41,7 @@ interface Bitt {
     onmousedown?:any;
     onmouseup?:any;
     waveform?:any;
+    display?:false;
 }
 
 
@@ -111,7 +112,7 @@ class Circlemap {
             if(!!target.onmousedown && typeof target.onmousedown == "function"){
                 target.onmousedown.call({},target);    
             }
-            
+            return false;
         }
         
         this._canvas.ontouchstart = function(e):any{
@@ -121,11 +122,10 @@ class Circlemap {
             
             bittEffectiveScale(target,1,0.9);
             
-            alert("console.log")
             if(!!target.onmousedown && typeof target.onmousedown == "function"){
                 target.onmousedown.call({},target);    
             }
-            
+            return false;
         }
         
         this._canvas.onmouseup = function(e):any{
@@ -142,6 +142,7 @@ class Circlemap {
             if(!!target.onclick && typeof target.onclick == "function"){
                 target.onclick.call({},target);    
             }
+            return false;
         }
         
         this._canvas.ontouchend = function(e):any{
@@ -158,6 +159,7 @@ class Circlemap {
             if(!!target.onclick && typeof target.onclick == "function"){
                 target.onclick.call({},target);    
             }
+            return false;
         }
         
         
@@ -251,6 +253,9 @@ class Circlemap {
     
     bittDefaultDraw(bitt:Bitt,ctx:any,centerAxis:Axis,i?:number){
         
+        if(typeof bitt.display != "undefined" && bitt.display == false){
+            return false;
+        }
         
         var scale = !!bitt.scale ? (bitt.scale) : 1;
         
