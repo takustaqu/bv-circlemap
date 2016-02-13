@@ -193,6 +193,7 @@ var Circlemap = (function () {
         bitt.translate = { x: 0, y: 0 };
         bitt.scale = 0.01;
         bitt.display = false;
+        bitt.isPlaying = true;
         if (!!bitt.props.icon && typeof bitt.props.icon == "string") {
             bitt.props.$icon = document.createElement("img");
             bitt.props.$icon.src = bitt.props.icon;
@@ -259,17 +260,19 @@ var Circlemap = (function () {
             ctx.fillStyle = "#999";
         }
         //外周の放射エフェクト
-        ctx.lineWidth = 2;
-        ctx.globalAlpha = 1 - ease.linear(curTime4x, 0, 1, 1);
-        ctx.beginPath();
-        ctx.arc(0, 0, ease.easeOutQuart(curTime4x, sizeHalf, (sizeHalf * 0.2), 1), 0, Math.PI * 2, false);
-        ctx.closePath();
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.arc(0, 0, ease.linear(curTime4x, sizeHalf, (sizeHalf * 0.2), 1), 0, Math.PI * 2, false);
-        ctx.closePath();
-        ctx.stroke();
-        ctx.globalAlpha = 1;
+        if (bitt.isPlaying) {
+            ctx.lineWidth = 2;
+            ctx.globalAlpha = 1 - ease.linear(curTime4x, 0, 1, 1);
+            ctx.beginPath();
+            ctx.arc(0, 0, ease.easeOutQuart(curTime4x, sizeHalf, (sizeHalf * 0.2), 1), 0, Math.PI * 2, false);
+            ctx.closePath();
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(0, 0, ease.linear(curTime4x, sizeHalf, (sizeHalf * 0.2), 1), 0, Math.PI * 2, false);
+            ctx.closePath();
+            ctx.stroke();
+            ctx.globalAlpha = 1;
+        }
         //アイコンの描画
         ctx.beginPath();
         ctx.arc(0, 0, sizeHalf, 0, Math.PI * 2, false);
@@ -279,15 +282,17 @@ var Circlemap = (function () {
             ctx.drawImage(bitt.props.$icon, sizeHalf * -1, sizeHalf * -1, size, size);
         }
         if (!!bitt.waveform) {
-            ctx.beginPath();
-            ctx.moveTo(curTime * size - sizeHalf, -sizeHalf);
-            ctx.lineTo(curTime * size - sizeHalf, sizeHalf);
-            ctx.strokeStyle = "rgba(100,0,0,0.1)";
-            ctx.lineWidth = 5;
-            ctx.stroke();
-            ctx.strokeStyle = "rgba(255,0,0,0.5)";
-            ctx.lineWidth = 1;
-            ctx.stroke();
+            if (bitt.isPlaying) {
+                ctx.beginPath();
+                ctx.moveTo(curTime * size - sizeHalf, -sizeHalf);
+                ctx.lineTo(curTime * size - sizeHalf, sizeHalf);
+                ctx.strokeStyle = "rgba(100,0,0,0.1)";
+                ctx.lineWidth = 5;
+                ctx.stroke();
+                ctx.strokeStyle = "rgba(255,0,0,0.5)";
+                ctx.lineWidth = 1;
+                ctx.stroke();
+            }
             //ctx.globalCompositeOperation = "xor";
             if (!!bitt.color) {
                 ctx.strokeStyle = "rgb(" + (256 - bitt.color.r) + "," + (256 - bitt.color.g) + "," + (256 - bitt.color.b) + ")";
@@ -332,25 +337,27 @@ var Circlemap = (function () {
         ctx.arc(0, 0, sizeHalf, 0, Math.PI * 2, false);
         ctx.closePath();
         ctx.stroke();
-        this._radkit.setAngle(360 - curTime * 360);
-        var beatPos = this._radkit.getPosition(0, 0, sizeHalf + this._props.cellBeatRailPadding);
-        ctx.beginPath();
-        ctx.arc(beatPos.x, beatPos.y, ballSize, 0, Math.PI * 2, false);
-        ctx.closePath();
-        ctx.fill();
-        ctx.beginPath();
-        ctx.arc(beatPos.x, beatPos.y, ballSize * 0.6, 0, Math.PI * 2, false);
-        ctx.closePath();
-        ctx.fillStyle = "#fff";
-        ctx.globalAlpha = (1 - curTime8x) * 0.8;
-        ctx.fill();
-        ctx.globalAlpha = 1;
-        ctx.beginPath();
-        ctx.arc(beatPos.x, beatPos.y, ease.easeOutQuart(curTime8x, ballSize, ballSize * 1, 1), 0, Math.PI * 2, false);
-        ctx.closePath();
-        ctx.globalAlpha = 1 - ease.linear(curTime8x, 0, 1, 1);
-        ctx.stroke();
-        ctx.globalAlpha = 1;
+        if (bitt.isPlaying) {
+            this._radkit.setAngle(360 - curTime * 360);
+            var beatPos = this._radkit.getPosition(0, 0, sizeHalf + this._props.cellBeatRailPadding);
+            ctx.beginPath();
+            ctx.arc(beatPos.x, beatPos.y, ballSize, 0, Math.PI * 2, false);
+            ctx.closePath();
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(beatPos.x, beatPos.y, ballSize * 0.6, 0, Math.PI * 2, false);
+            ctx.closePath();
+            ctx.fillStyle = "#fff";
+            ctx.globalAlpha = (1 - curTime8x) * 0.8;
+            ctx.fill();
+            ctx.globalAlpha = 1;
+            ctx.beginPath();
+            ctx.arc(beatPos.x, beatPos.y, ease.easeOutQuart(curTime8x, ballSize, ballSize * 1, 1), 0, Math.PI * 2, false);
+            ctx.closePath();
+            ctx.globalAlpha = 1 - ease.linear(curTime8x, 0, 1, 1);
+            ctx.stroke();
+            ctx.globalAlpha = 1;
+        }
         ctx.restore();
         /* ### 当たり判定Canvasの処理 ### */
         var tCtx = this._touchCtx;
@@ -446,6 +453,14 @@ var Circlemap = (function () {
         this._bitts.forEach(function (current, i, array) {
             $this.bittDefaultDraw(current, ctx, center, i);
         });
+    };
+    Circlemap.prototype.stop = function (idx) {
+        var bitt = this._bitts[idx];
+        bitt.isPlaying = false;
+    };
+    Circlemap.prototype.play = function (idx) {
+        var bitt = this._bitts[idx];
+        bitt.isPlaying = true;
     };
     Circlemap.prototype.show = function (idx) {
         var bitt = this._bitts[idx];

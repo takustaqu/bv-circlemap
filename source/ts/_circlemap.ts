@@ -217,7 +217,7 @@ class Circlemap {
         bitt.translate = {x:0,y:0}
         bitt.scale = 0.01;
         bitt.display = false;
-        
+        bitt.isPlaying = true;
         
         if(!!bitt.props.icon && typeof bitt.props.icon == "string"){
             bitt.props.$icon = document.createElement("img");
@@ -305,17 +305,19 @@ class Circlemap {
         
         
         //外周の放射エフェクト
-        ctx.lineWidth = 2;
-        ctx.globalAlpha = 1-ease.linear(curTime4x,0,1,1);
-        ctx.beginPath();
-            ctx.arc(0, 0, ease.easeOutQuart(curTime4x,sizeHalf,(sizeHalf*0.2),1), 0, Math.PI*2, false);
-        ctx.closePath();
-        ctx.stroke();
-        ctx.beginPath();
-            ctx.arc(0, 0, ease.linear(curTime4x,sizeHalf,(sizeHalf*0.2),1), 0, Math.PI*2, false);
-        ctx.closePath();
-        ctx.stroke();
-        ctx.globalAlpha = 1;
+        if(bitt.isPlaying){
+            ctx.lineWidth = 2;
+            ctx.globalAlpha = 1-ease.linear(curTime4x,0,1,1);
+            ctx.beginPath();
+                ctx.arc(0, 0, ease.easeOutQuart(curTime4x,sizeHalf,(sizeHalf*0.2),1), 0, Math.PI*2, false);
+            ctx.closePath();
+            ctx.stroke();
+            ctx.beginPath();
+                ctx.arc(0, 0, ease.linear(curTime4x,sizeHalf,(sizeHalf*0.2),1), 0, Math.PI*2, false);
+            ctx.closePath();
+            ctx.stroke();
+            ctx.globalAlpha = 1;
+        }
         
         
         //アイコンの描画
@@ -330,16 +332,18 @@ class Circlemap {
         if(!!bitt.waveform){
             
             
-            ctx.beginPath();
-            ctx.moveTo(curTime*size-sizeHalf, -sizeHalf);
-            ctx.lineTo(curTime*size-sizeHalf, sizeHalf);
-            
-            ctx.strokeStyle = "rgba(100,0,0,0.1)";
-            ctx.lineWidth = 5;
-            ctx.stroke();
-            ctx.strokeStyle = "rgba(255,0,0,0.5)";
-            ctx.lineWidth = 1;
-            ctx.stroke();
+            if(bitt.isPlaying){
+                ctx.beginPath();
+                ctx.moveTo(curTime*size-sizeHalf, -sizeHalf);
+                ctx.lineTo(curTime*size-sizeHalf, sizeHalf);
+                
+                ctx.strokeStyle = "rgba(100,0,0,0.1)";
+                ctx.lineWidth = 5;
+                ctx.stroke();
+                ctx.strokeStyle = "rgba(255,0,0,0.5)";
+                ctx.lineWidth = 1;
+                ctx.stroke();
+            }
             
             //ctx.globalCompositeOperation = "xor";
             if(!!bitt.color){
@@ -391,35 +395,39 @@ class Circlemap {
        
        
        //画像の外周 
+       
+    
         ctx.beginPath();
             ctx.arc(0, 0, sizeHalf, 0, Math.PI*2, false);
         ctx.closePath();
         ctx.stroke();
-        
-        
-        this._radkit.setAngle(360-curTime*360);
-        var beatPos = this._radkit.getPosition(0,0,sizeHalf  +this._props.cellBeatRailPadding);
-        
-        ctx.beginPath();
-            ctx.arc(beatPos.x, beatPos.y, ballSize, 0, Math.PI*2, false);
-        ctx.closePath();
-        ctx.fill();
-        
-        ctx.beginPath();
-            ctx.arc(beatPos.x, beatPos.y, ballSize*0.6, 0, Math.PI*2, false);
-        ctx.closePath();
-        ctx.fillStyle = "#fff";
-        ctx.globalAlpha = (1-curTime8x)*0.8;   
-        ctx.fill();
-        ctx.globalAlpha = 1;
-        
-        ctx.beginPath();
-            ctx.arc(beatPos.x, beatPos.y, ease.easeOutQuart(curTime8x,ballSize,ballSize*1,1) , 0, Math.PI*2, false);
-        ctx.closePath();
-        ctx.globalAlpha = 1-ease.linear(curTime8x,0,1,1);
-        ctx.stroke();
-        ctx.globalAlpha = 1;
-        
+    
+        if(bitt.isPlaying){
+                    
+            this._radkit.setAngle(360-curTime*360);
+            var beatPos = this._radkit.getPosition(0,0,sizeHalf  +this._props.cellBeatRailPadding);
+            
+            ctx.beginPath();
+                ctx.arc(beatPos.x, beatPos.y, ballSize, 0, Math.PI*2, false);
+            ctx.closePath();
+            ctx.fill();
+            
+            ctx.beginPath();
+                ctx.arc(beatPos.x, beatPos.y, ballSize*0.6, 0, Math.PI*2, false);
+            ctx.closePath();
+            ctx.fillStyle = "#fff";
+            ctx.globalAlpha = (1-curTime8x)*0.8;   
+            ctx.fill();
+            ctx.globalAlpha = 1;
+            
+            ctx.beginPath();
+                ctx.arc(beatPos.x, beatPos.y, ease.easeOutQuart(curTime8x,ballSize,ballSize*1,1) , 0, Math.PI*2, false);
+            ctx.closePath();
+            ctx.globalAlpha = 1-ease.linear(curTime8x,0,1,1);
+            ctx.stroke();
+            ctx.globalAlpha = 1;
+        }
+            
         ctx.restore();
         
         
@@ -538,6 +546,16 @@ class Circlemap {
         
     }
     
+    stop(idx:number):any{
+        var bitt = this._bitts[idx];
+        bitt.isPlaying = false;
+    }
+    
+    play(idx:number):any{
+        var bitt = this._bitts[idx];
+        bitt.isPlaying = true;
+    }
+    
     show(idx:number):any{
         var bitt = this._bitts[idx];
         if(!!!bitt) return false;
@@ -586,7 +604,7 @@ class Circlemap {
                 case 0:
                     break;
                 case 1:
-                   aCue.push(this.animate(this._bitts[displayed[0]],{translate:{x:0,y:0},scale:1},500);)
+                   aCue.push(this.animate(this._bitts[displayed[0]],{translate:{x:0,y:0},scale:1},500));
                     break;
            	    case 2:
                    aCue.push(this.animate(this._bitts[displayed[0]],{scale:1,translate:{x:trans*-0.5,y:0}},1500))
@@ -618,7 +636,7 @@ class Circlemap {
             }
             
             for(var i=count,il=hidden.length; i < il ; i++){
-               aCue.push(this.animate(this._bitts[hidden[i]],{translate:{x:0,y:0},scale:0.01},500);)
+               aCue.push(this.animate(this._bitts[hidden[i]],{translate:{x:0,y:0},scale:0.01},500))
             }
             
             this._transitionCue = aCue; 
