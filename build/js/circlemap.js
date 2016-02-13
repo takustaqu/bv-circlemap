@@ -61,34 +61,6 @@ var Radkit = (function () {
 if (!Vibrant) {
     var Vibrant = false;
 }
-(function ($) {
-    $.fn.setTouchStart = function (touchEventHandler) {
-        var isTouch = ('ontouchstart' in window);
-        // PC/SmartPhone両対応
-        $(this).die('touchstart');
-        $(this).live('touchstart', touchEventHandler);
-        $(this).die('mousedown');
-        $(this).live('mousedown', touchEventHandler);
-        // SmartPhoneでもmouseイベントを拾ってしまう端末が存在するため、 
-        // タッチできる環境(SmartPhone)であればマウス操作不可にする。
-        if (isTouch) {
-            $(this).die('mousedown', touchEventHandler);
-        }
-    };
-    $.fn.setTouchEnd = function (touchEventHandler) {
-        var isTouch = ('ontouchstart' in window);
-        // PC/SmartPhone両対応
-        $(this).die('touchend');
-        $(this).live('touchend', touchEventHandler);
-        $(this).die('mouseup');
-        $(this).live('mouseup', touchEventHandler);
-        // SmartPhoneでもmouseイベントを拾ってしまう端末が存在するため、 
-        // タッチできる環境(SmartPhone)であればマウス操作不可にする。
-        if (isTouch) {
-            $(this).die('mouseup', touchEventHandler);
-        }
-    };
-})(jQuery);
 var Circlemap = (function () {
     function Circlemap(options) {
         this._bitts = [];
@@ -115,21 +87,49 @@ var Circlemap = (function () {
         //canvasのフィット処理
         this.fitCanvasSize();
         this.getCanvasSize();
+        function bittEffectiveScale(target, scalefrom, scaleto) {
+            var i = 0;
+            var end = 10;
+            var timer = setInterval(function () {
+                target.scaleFx = ease.easeOutQuart(i, scalefrom, scaleto - scalefrom, end);
+                if (i == end)
+                    clearInterval(timer);
+                i++;
+            }, 1000 / 60);
+        }
         //クリックイベント実行
         this._canvas.onmousedown = function (e) {
-            e.preventDefault();
-            e.stopPropagation();
             var code = $this.checkObjectIdFromAxis(e.offsetX, e.offsetY);
             var target = $this._bitts[code];
+            bittEffectiveScale(target, 1, 0.9);
+            if (!!target.onmousedown && typeof target.onmousedown == "function") {
+                target.onmousedown.call({}, target);
+            }
+        };
+        this._canvas.ontouchstart = function (e) {
+            var code = $this.checkObjectIdFromAxis(e.offsetX, e.offsetY);
+            var target = $this._bitts[code];
+            bittEffectiveScale(target, 1, 0.9);
+            alert("console.log");
             if (!!target.onmousedown && typeof target.onmousedown == "function") {
                 target.onmousedown.call({}, target);
             }
         };
         this._canvas.onmouseup = function (e) {
-            e.preventDefault();
-            e.stopPropagation();
             var code = $this.checkObjectIdFromAxis(e.offsetX, e.offsetY);
             var target = $this._bitts[code];
+            bittEffectiveScale(target, 0.9, 1);
+            if (!!target.onmouseup && typeof target.onmouseup == "function") {
+                target.onmouseup.call({}, target);
+            }
+            if (!!target.onclick && typeof target.onclick == "function") {
+                target.onclick.call({}, target);
+            }
+        };
+        this._canvas.ontouchend = function (e) {
+            var code = $this.checkObjectIdFromAxis(e.offsetX, e.offsetY);
+            var target = $this._bitts[code];
+            bittEffectiveScale(target, 0.9, 1);
             if (!!target.onmouseup && typeof target.onmouseup == "function") {
                 target.onmouseup.call({}, target);
             }
@@ -206,10 +206,13 @@ var Circlemap = (function () {
         return parseInt(r + g + b, 16) - 1;
     };
     Circlemap.prototype.bittDefaultDraw = function (bitt, ctx, centerAxis, i) {
-        var scale = !!bitt.scale ? (1 / bitt.scale) : 1;
-        var translate = [(bitt.translate.x + centerAxis.x) * scale, (bitt.translate.y + centerAxis.y) * scale];
+        var scale = !!bitt.scale ? (bitt.scale) : 1;
+        if (!!bitt.scaleFx) {
+            scale = scale * bitt.scaleFx;
+        }
+        var translate = [(bitt.translate.x + centerAxis.x) * (1 / scale), (bitt.translate.y + centerAxis.y) * (1 / scale)];
         ctx.save();
-        ctx.scale(bitt.scale, bitt.scale);
+        ctx.scale(scale, scale);
         ctx.translate(translate[0], translate[1]);
         var size = this._props.cellBaseSize;
         var sizeHalf = size >> 1;
@@ -252,7 +255,7 @@ var Circlemap = (function () {
         }
         ctx.restore();
         ctx.save();
-        ctx.scale(bitt.scale, bitt.scale);
+        ctx.scale(scale, scale);
         ctx.translate(translate[0], translate[1]);
         //色を設定
         if (!!bitt.color) {
