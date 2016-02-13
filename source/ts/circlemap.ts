@@ -4,4 +4,5 @@
 /// <reference path="_easekit.ts" />
 /// <reference path="_radkit.ts" />
 /// <reference path="_circlemap.ts" />
+/// <reference path="_measurekit.ts" />
 

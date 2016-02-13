@@ -30,15 +30,23 @@
     });
     
     map.addBitt({
-        velocity:1,
-        translate:{x:0,y:0+150},
-        scale:1.5,
+        velocity:1, //強度(まだ未使用)
+        translate:{x:0,y:0+150}, //画面中心位置からのトランスレート
+        scale:1, //拡大(0-1のfloat)
         props:{
-          icon:"images/01.jpg"  
+          icon:"images/01.jpg" //アイコン画像 
         },
-        timeshift:0,
+        timeshift:0, //タイミングボールの位置をずらす(0-1 float)
+        
+        //以下はタッチ時のイベント。オプションなので不要な場合はそのまま削除。
         onclick:function(arg){
-            //
+            
+        },
+        onmousedown:function(arg){
+            
+        },
+        onmouseup:function(arg){
+            
         }
     });
     map.addBitt({
@@ -101,6 +109,13 @@
             console.log(arg.props.icon);
         }
     });
+    
+    (function(){
+        var sonoMeasure = new SonoMeasure();
+        setInterval(function(){
+
+        },1000/30);     
+    })();
 </script>
 </body>
 </html>

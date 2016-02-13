@@ -5,7 +5,6 @@ if(!Vibrant){
     var Vibrant:any = false;
 }
 
-
 interface Window {
     webkitRequestAnimationFrame(callback: FrameRequestCallback): number;
     mozRequestAnimationFrame(callback: FrameRequestCallback): number;

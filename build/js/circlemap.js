@@ -342,6 +342,51 @@ var Circlemap = (function () {
 })();
 /// <reference path="d_ts/jquery.d.ts" />
 /// <reference path="d_ts/waa.d.ts" />
+var SonoMeasure = (function () {
+    function SonoMeasure() {
+        this._now = new Date();
+        this._bpm = 120;
+        this._fetchTimer = 0;
+        this.refreshToday();
+    }
+    SonoMeasure.prototype.refreshToday = function () {
+        this._today = new Date(this._now.getFullYear() + "/" + (this._now.getMonth() + 1) + "/" + this._now.getDate());
+    };
+    SonoMeasure.prototype.startFetch = function () {
+        var $this = this;
+        this._fetchTimer = setInterval(function () {
+            console.log($this.getCurrentBeats());
+        }, 1000 / 60);
+    };
+    SonoMeasure.prototype.stopFetch = function () {
+        clearInterval(this._fetchTimer);
+    };
+    SonoMeasure.prototype.getCurrentPosition = function () {
+        this._now = new Date();
+        return this._now.getTime() - this._today.getTime();
+    };
+    SonoMeasure.prototype.getCurrentBeats = function () {
+        var current = this.getCurrentPosition();
+        var beatLength = (1000 / (this._bpm / 60));
+        var fullbeat = Math.floor(current / beatLength);
+        var measure = Math.floor(fullbeat / 4);
+        var beat = fullbeat % 4;
+        var position = current / (24 * 60 * 60 * 1000);
+        return {
+            current: current,
+            beatLength: beatLength,
+            fullbeat: fullbeat,
+            measure: measure,
+            beat: beat,
+            position: position
+        };
+        //
+    };
+    return SonoMeasure;
+})();
+/// <reference path="d_ts/jquery.d.ts" />
+/// <reference path="d_ts/waa.d.ts" />
 /// <reference path="_easekit.ts" />
 /// <reference path="_radkit.ts" />
 /// <reference path="_circlemap.ts" />
+/// <reference path="_measurekit.ts" />
