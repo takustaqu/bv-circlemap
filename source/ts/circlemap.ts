@@ -21,8 +21,10 @@ interface ColourRGB {
 
 interface Bitt {
     velocity:number;
-    axis:Axis;
+    translate:Axis;
     color:ColourRGB;
+    type:string;
+    props:any;
     frame:any; //frameごとに実行される関数を定義
 }
 
@@ -67,19 +69,43 @@ class Circlemap {
     }
     
     addBitt(bitt:Bitt):Bitt{
-        if(!bitt.frame){
-            bitt.frame = this.bittDefaultDraw;
+        if(!bitt.frame){}
+        
+        
+        if(!!bitt.props.icon && typeof bitt.props.icon == "string"){
+            bitt.props.$icon = document.createElement("img");
+            bitt.props.$icon.src = bitt.props.icon; 
         }
         this._bitts.push(bitt);
         return bitt;
     }
     
     bittDefaultDraw(bitt:Bitt,ctx:any,centerAxis:Axis){
+        
+        var translate = [bitt.translate.x + centerAxis.x, bitt.translate.y + centerAxis.y]
+            
+        ]
+        ctx.save();
+        
+        
+        ctx.translate(translate[0],translate[1]);
+        
+        var size = 60;
+        var sizeHalf = size>>1;
+        
+        ctx.arc(0, 0, sizeHalf, 0, Math.PI*2, false);
+        ctx.clip();
+        if(!!bitt.props.$icon){
+            ctx.drawImage(bitt.props.$icon, sizeHalf*-1, sizeHalf*-1 , size,size);
+        }
+        ctx.restore();
+        
         ctx.save();
         ctx.beginPath();
-
-        ctx.arc(centerAxis.x, centerAxis.y, 30, 0, Math.PI*2, false);
-        ctx.stroke();        
+        ctx.translate(translate[0],translate[1]);
+        ctx.arc(0, 0, sizeHalf, 0, Math.PI*2, false);
+        ctx.strokeStyle = "#F00"
+        ctx.stroke();
         ctx.restore();
     }
     
@@ -114,11 +140,16 @@ class Circlemap {
         //全消去
         ctx.clearRect(0,0,this._screenSize.w,this._screenSize.h);
         
+        var $this = this;
         //ビッツを走査
         this._bitts.forEach(function(current,i,array){
-           current.frame(current,ctx,center);
+            
+           $this.bittDefaultDraw(current,ctx,center);
+           
         });
         
     }
     
 } 
+
+
