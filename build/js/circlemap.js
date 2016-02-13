@@ -449,6 +449,8 @@ var Circlemap = (function () {
     };
     Circlemap.prototype.show = function (idx) {
         var bitt = this._bitts[idx];
+        if (!!!bitt)
+            return false;
         bitt.translate = { x: 0, y: 0 };
         bitt.scale = 0.01;
         bitt.display = true;
@@ -461,6 +463,8 @@ var Circlemap = (function () {
     };
     Circlemap.prototype.hide = function (idx) {
         var bitt = this._bitts[idx];
+        if (!!!bitt)
+            return false;
         bitt.display = false;
         var count = 0;
         this._bitts.forEach(function (b, i) {

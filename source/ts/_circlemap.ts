@@ -538,8 +538,9 @@ class Circlemap {
         
     }
     
-    show(idx:number){
+    show(idx:number):any{
         var bitt = this._bitts[idx];
+        if(!!!bitt) return false;
         bitt.translate = {x:0,y:0}
         bitt.scale = 0.01;
         bitt.display = true;
@@ -551,8 +552,9 @@ class Circlemap {
         this.layout(count);
     }
     
-    hide(idx:number){
+    hide(idx:number):any{
         var bitt = this._bitts[idx];
+        if(!!!bitt) return false;
         bitt.display = false;
         var count = 0;
         this._bitts.forEach(function(b,i){
