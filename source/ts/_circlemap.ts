@@ -459,7 +459,7 @@ class Circlemap {
         
         var i = 0;
         var frame = Math.floor(duration/60);
-        console.log(bitt);
+        //console.log(bitt);
         
         var origin:any = {};//原点を保存
         origin.translate = {};
@@ -486,7 +486,7 @@ class Circlemap {
                 bitt.scaleFx = ease.easeOutQuart(i, origin.scaleFx , param.scaleFx -  origin.scaleFx , frame);
             }
             if(!!param.translate && typeof param.translate.x == "number"){
-                console.log(param.translate.x , origin.translate.x )
+                //console.log(param.translate.x , origin.translate.x )
                 bitt.translate.x = ease.easeOutQuart(i, origin.translate.x , param.translate.x - origin.translate.x , frame);
             }
             if(!!param.translate && typeof param.translate.y == "number"){
@@ -567,6 +567,11 @@ class Circlemap {
         
         var displayed = [];
         var hidden = [];
+        var aCue = [];
+        
+        this._transitionCue.forEach(function(b,i){
+            b.halt();
+        })
         
         this._bitts.forEach(function(b,i){
             if(!!b.display){
@@ -581,11 +586,11 @@ class Circlemap {
                 case 0:
                     break;
                 case 1:
-                    this.animate(this._bitts[displayed[0]],{translate:{x:0,y:0},scale:1},500);
+                   aCue.push(this.animate(this._bitts[displayed[0]],{translate:{x:0,y:0},scale:1},500);)
                     break;
            	    case 2:
-                    this.animate(this._bitts[displayed[0]],{scale:1,translate:{x:trans*-0.5,y:0}},1500)
-                    this.animate(this._bitts[displayed[1]],{scale:1,translate:{x:trans*0.5,y:0}},1500)
+                   aCue.push(this.animate(this._bitts[displayed[0]],{scale:1,translate:{x:trans*-0.5,y:0}},1500))
+                   aCue.push(this.animate(this._bitts[displayed[1]],{scale:1,translate:{x:trans*0.5,y:0}},1500))
                     break;
                 case 3:
                     var step = 360 / count
@@ -593,28 +598,30 @@ class Circlemap {
                     for(var j=0,jl=count; j < jl ; j++){
                         this._radkit.setAngle(cap+step*j);
                         var axis = this._radkit.getPosition(0,0,trans*0.7);
-                        this.animate(this._bitts[displayed[j]],{scale:1,translate:{x:axis.x,y:axis.y}},1500)
+                       aCue.push(this.animate(this._bitts[displayed[j]],{scale:1,translate:{x:axis.x,y:axis.y}},1500))
                     }
                     break;
                 case 4:
                 case 5:
                 case 6:
-                    this.animate(this._bitts[displayed[0]],{scale:1,translate:{x:0,y:0}},1500)
+                   aCue.push(this.animate(this._bitts[displayed[0]],{scale:1,translate:{x:0,y:0}},1500))
                     
                     var step = 360 / (count-1)
                     var cap = -90;
                     for(var j=0,jl=count-1; j < jl ; j++){
                         this._radkit.setAngle(cap+step*j);
                         var axis = this._radkit.getPosition(0,0,trans);
-                        this.animate(this._bitts[displayed[j+1]],{scale:1,translate:{x:axis.x,y:axis.y}},1500)
+                       aCue.push(this.animate(this._bitts[displayed[j+1]],{scale:1,translate:{x:axis.x,y:axis.y}},1500))
                     }
                    
                     break;
             }
             
             for(var i=count,il=hidden.length; i < il ; i++){
-                this.animate(this._bitts[hidden[i]],{translate:{x:0,y:0},scale:0.01},500);
+               aCue.push(this.animate(this._bitts[hidden[i]],{translate:{x:0,y:0},scale:0.01},500);)
             }
+            
+            this._transitionCue = aCue; 
       }
         
         
