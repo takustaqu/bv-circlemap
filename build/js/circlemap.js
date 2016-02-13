@@ -299,8 +299,14 @@ var Circlemap = (function () {
             }
             var seg = size / bitt.waveform.length;
             ctx.beginPath();
+            var wavemax = 0;
             bitt.waveform.forEach(function (curr, i) {
-                var y = curr * 4;
+                if (curr > wavemax)
+                    wavemax = curr;
+            });
+            var waveRatio = (sizeHalf * 0.8) / wavemax;
+            bitt.waveform.forEach(function (curr, i) {
+                var y = curr * waveRatio;
                 if (i == 0) {
                     ctx.moveTo(0 - sizeHalf, y);
                 }
