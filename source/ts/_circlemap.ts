@@ -198,7 +198,7 @@ class Circlemap {
         
         
         
-        var bpm = 120; 
+        var bpm = 150; 
         var step = ((bpm/8)/60)/4/(1000/60);
         setInterval(function(){
             $this._globalBeatRotate = $this._globalBeatRotate + step;
@@ -614,11 +614,11 @@ class Circlemap {
                 case 0:
                     break;
                 case 1:
-                   aCue.push(this.animate(this._bitts[displayed[0]],{translate:{x:0,y:0},scale:1},300));
+                   aCue.push(this.animate(this._bitts[displayed[0]],{translate:{x:0,y:0},scale:1},400));
                     break;
            	    case 2:
-                   aCue.push(this.animate(this._bitts[displayed[0]],{scale:1,translate:{x:trans*-0.5,y:0}},300))
-                   aCue.push(this.animate(this._bitts[displayed[1]],{scale:1,translate:{x:trans*0.5,y:0}},300))
+                   aCue.push(this.animate(this._bitts[displayed[0]],{scale:1,translate:{x:trans*-0.5,y:0}},400))
+                   aCue.push(this.animate(this._bitts[displayed[1]],{scale:1,translate:{x:trans*0.5,y:0}},400))
                     break;
                 case 3:
                     var step = 360 / count
@@ -626,27 +626,27 @@ class Circlemap {
                     for(var j=0,jl=count; j < jl ; j++){
                         this._radkit.setAngle(cap+step*j);
                         var axis = this._radkit.getPosition(0,0,trans*0.7);
-                       aCue.push(this.animate(this._bitts[displayed[j]],{scale:1,translate:{x:axis.x,y:axis.y}},300))
+                       aCue.push(this.animate(this._bitts[displayed[j]],{scale:1,translate:{x:axis.x,y:axis.y}},400))
                     }
                     break;
                 case 4:
                 case 5:
                 case 6:
-                   aCue.push(this.animate(this._bitts[displayed[0]],{scale:1,translate:{x:0,y:0}},300))
+                   aCue.push(this.animate(this._bitts[displayed[0]],{scale:1,translate:{x:0,y:0}},400))
                     
                     var step = 360 / (count-1)
                     var cap = -90;
                     for(var j=0,jl=count-1; j < jl ; j++){
                         this._radkit.setAngle(cap+step*j);
                         var axis = this._radkit.getPosition(0,0,trans);
-                       aCue.push(this.animate(this._bitts[displayed[j+1]],{scale:1,translate:{x:axis.x,y:axis.y}},300))
+                       aCue.push(this.animate(this._bitts[displayed[j+1]],{scale:1,translate:{x:axis.x,y:axis.y}},400))
                     }
                    
                     break;
             }
             
             for(var i=count,il=hidden.length; i < il ; i++){
-               aCue.push(this.animate(this._bitts[hidden[i]],{translate:{x:0,y:0},scale:0.01},300))
+               aCue.push(this.animate(this._bitts[hidden[i]],{translate:{x:0,y:0},scale:0.01},400))
             }
             
             this._transitionCue = aCue; 

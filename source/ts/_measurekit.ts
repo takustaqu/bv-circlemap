@@ -13,7 +13,7 @@ class SonoMeasure {
      
     constructor (){
         this._now = new Date();
-        this._bpm = 120;
+        this._bpm = 150;
         this._fetchTimer = 0;
         this.refreshToday();
     }
