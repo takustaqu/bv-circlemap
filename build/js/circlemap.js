@@ -77,7 +77,8 @@ var Circlemap = (function () {
         this._radkit = new Radkit();
         this._props = {
             cellBaseSize: 200,
-            cellBeatRailPadding: 0
+            cellBeatRailPadding: 0,
+            cellBeatMargin: 60
         };
         //DOM取得
         this._canvas = document.getElementById(options.canvasId);
@@ -437,6 +438,44 @@ var Circlemap = (function () {
         this._bitts.forEach(function (current, i, array) {
             $this.bittDefaultDraw(current, ctx, center, i);
         });
+    };
+    Circlemap.prototype.layout = function (count) {
+        var trans = this._props.cellBaseSize + this._props.cellBeatMargin;
+        switch (count) {
+            case 0:
+                break;
+            case 1:
+                this.animate(this._bitts[0], { translate: { x: 0, y: 0 }, scale: 1 }, 500);
+                break;
+            case 2:
+                this.animate(this._bitts[0], { scale: 1, translate: { x: trans * -0.5, y: 0 } }, 1500);
+                this.animate(this._bitts[1], { scale: 1, translate: { x: trans * 0.5, y: 0 } }, 1500);
+                break;
+            case 3:
+                var step = 360 / count;
+                var cap = -90;
+                for (var j = 0, jl = count; j < jl; j++) {
+                    this._radkit.setAngle(cap + step * j);
+                    var axis = this._radkit.getPosition(0, 0, trans * 0.7);
+                    this.animate(this._bitts[j], { scale: 1, translate: { x: axis.x, y: axis.y } }, 1500);
+                }
+                break;
+            case 4:
+            case 5:
+            case 6:
+                this.animate(this._bitts[0], { scale: 1, translate: { x: 0, y: 0 } }, 1500);
+                var step = 360 / (count - 1);
+                var cap = -90;
+                for (var j = 0, jl = count - 1; j < jl; j++) {
+                    this._radkit.setAngle(cap + step * j);
+                    var axis = this._radkit.getPosition(0, 0, trans);
+                    this.animate(this._bitts[j + 1], { scale: 1, translate: { x: axis.x, y: axis.y } }, 1500);
+                }
+                break;
+        }
+        for (var i = count, il = this._bitts.length; i < il; i++) {
+            this.animate(this._bitts[i], { translate: { x: 0, y: 0 }, scale: 0.01 }, 500);
+        }
     };
     return Circlemap;
 })();
