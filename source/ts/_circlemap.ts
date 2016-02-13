@@ -45,7 +45,7 @@ class Circlemap {
             canvasId : "circlemap"
         }
         
-        this.props = {
+        this._props = {
             cellBaseSize:200,
             cellBeatRailPadding:10
         }
@@ -88,13 +88,12 @@ class Circlemap {
         
         var translate = [bitt.translate.x + centerAxis.x, bitt.translate.y + centerAxis.y]
             
-        ]
         ctx.save();
         
         
         ctx.translate(translate[0],translate[1]);
         
-        var size = this.props.cellBaseSize;
+        var size = this._props.cellBaseSize;
         var sizeHalf = size>>1;
         
         ctx.beginPath();
@@ -117,7 +116,7 @@ class Circlemap {
         ctx.stroke();
         
         ctx.beginPath();
-            ctx.arc(0, 0, sizeHalf+this.props.cellBeatRailPadding, 0, Math.PI*2, false);
+            ctx.arc(0, 0, sizeHalf+this._props.cellBeatRailPadding, 0, Math.PI*2, false);
         ctx.closePath();
         ctx.stroke();
         
