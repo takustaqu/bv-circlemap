@@ -38,12 +38,19 @@ class Circlemap {
     private _ctx:any = false;
     private _screenSize:Size = {w:0,h:0};
     private _props:any = {};
+    
+    private _radkit:any;
+    
+    private _globalBeatRotate:number = 0;
       
     constructor(options:Options){
         
         var defaultOption = {
             canvasId : "circlemap"
         }
+        
+        this._radkit =  new Radkit();
+        
         
         this._props = {
             cellBaseSize:200,
@@ -53,6 +60,7 @@ class Circlemap {
         this._canvas = <HTMLCanvasElement>document.getElementById(options.canvasId);
         this._ctx = this._canvas.getContext("2d");
         
+        this.fitCanvasSize();
         this.getCanvasSize();
         
         //console.log(this._ctx);
@@ -67,9 +75,29 @@ class Circlemap {
             }, 200);
         });
         
-        setInterval(function(){
+        var requestAnimationFrame = 
+            window.requestAnimationFrame || 
+            window.mozRequestAnimationFrame || 
+            window.webkitRequestAnimationFrame || 
+            window.msRequestAnimationFrame;
+            window.requestAnimationFrame = requestAnimationFrame;
+        
+        // setInterval(function(){
+        //     $this.draw();
+        // },100);
+        
+        function drawLoop(){
             $this.draw();
-        },100)
+            requestAnimationFrame(drawLoop);
+        }
+        drawLoop();
+        
+        
+        
+        
+        setInterval(function(){
+            $this._globalBeatRotate--;
+        },10)
     }
     
     addBitt(bitt:Bitt):Bitt{
@@ -108,17 +136,30 @@ class Circlemap {
         ctx.save();
         ctx.translate(translate[0],translate[1]);
         ctx.strokeStyle = "#999";
+        ctx.fillStyle = "#999";
         ctx.lineWidth = 3;
-        
+       
+       
+       //画像の外周 
         ctx.beginPath();
             ctx.arc(0, 0, sizeHalf, 0, Math.PI*2, false);
         ctx.closePath();
         ctx.stroke();
         
+       //ビート表示のレール部
+       ctx.lineWidth = 1;
         ctx.beginPath();
             ctx.arc(0, 0, sizeHalf+this._props.cellBeatRailPadding, 0, Math.PI*2, false);
         ctx.closePath();
         ctx.stroke();
+        
+        this._radkit.setAngle(this._globalBeatRotate);
+        var beatPos = this._radkit.getPosition(0,0,sizeHalf  +this._props.cellBeatRailPadding);
+        
+        ctx.beginPath();
+            ctx.arc(beatPos.x, beatPos.y, 8, 0, Math.PI*2, false);
+        ctx.closePath();
+        ctx.fill();
         
         ctx.restore();
     }
