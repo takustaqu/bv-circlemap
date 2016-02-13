@@ -1,6 +1,16 @@
 /// <reference path="d_ts/jquery.d.ts" />
 /// <reference path="d_ts/waa.d.ts" />
 
+if(!Vibrant){
+    var Vibrant:any = false;
+}
+
+interface Window {
+    webkitRequestAnimationFrame(callback: FrameRequestCallback): number;
+    mozRequestAnimationFrame(callback: FrameRequestCallback): number;
+    Vibrant(el:any ):any;
+}
+
 interface Axis {
     x:number;
     y:number;    

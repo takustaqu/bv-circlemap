@@ -42,6 +42,9 @@ var Radkit = (function () {
 })();
 /// <reference path="d_ts/jquery.d.ts" />
 /// <reference path="d_ts/waa.d.ts" />
+if (!Vibrant) {
+    var Vibrant = false;
+}
 var Circlemap = (function () {
     function Circlemap(options) {
         this._bitts = [];
