@@ -35,10 +35,12 @@ interface Bitt {
     type:string;
     props:any;
     scale?:number;
-    scaleAnimationCache?:number;
+    scaleFx?:number;
     timeshift:number;
     frame:any; //frameごとに実行される関数を定義
     onclick?:any;
+    onmousedown?:any;
+    onmouseup?:any;
 }
 
 
