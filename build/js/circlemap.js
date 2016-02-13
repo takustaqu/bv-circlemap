@@ -70,6 +70,7 @@ var Circlemap = (function () {
         this._touchCtx = false;
         this._screenSize = { w: 0, h: 0 };
         this._props = {};
+        this._transitionCue = [];
         this._globalBeatRotate = 0;
         var defaultOption = {
             canvasId: "circlemap"
@@ -186,6 +187,12 @@ var Circlemap = (function () {
     }
     Circlemap.prototype.addBitt = function (bitt) {
         if (!bitt.frame) { }
+        if (!bitt.translate) {
+            bitt.translate = { x: 0, y: 0 };
+        }
+        bitt.translate = { x: 0, y: 0 };
+        bitt.scale = 0.01;
+        bitt.display = false;
         if (!!bitt.props.icon && typeof bitt.props.icon == "string") {
             bitt.props.$icon = document.createElement("img");
             bitt.props.$icon.src = bitt.props.icon;
@@ -419,6 +426,7 @@ var Circlemap = (function () {
                 bitt.translate.y = param.translate.y;
             }
         };
+        return func;
     };
     /**
      * 描画処理
@@ -439,17 +447,49 @@ var Circlemap = (function () {
             $this.bittDefaultDraw(current, ctx, center, i);
         });
     };
+    Circlemap.prototype.show = function (idx) {
+        var bitt = this._bitts[idx];
+        bitt.translate = { x: 0, y: 0 };
+        bitt.scale = 0.01;
+        bitt.display = true;
+        var count = 0;
+        this._bitts.forEach(function (b, i) {
+            if (!!b.display)
+                count++;
+        });
+        this.layout(count);
+    };
+    Circlemap.prototype.hide = function (idx) {
+        var bitt = this._bitts[idx];
+        bitt.display = false;
+        var count = 0;
+        this._bitts.forEach(function (b, i) {
+            if (!!b.display)
+                count++;
+        });
+        this.layout(count);
+    };
     Circlemap.prototype.layout = function (count) {
+        var displayed = [];
+        var hidden = [];
+        this._bitts.forEach(function (b, i) {
+            if (!!b.display) {
+                displayed.push(i);
+            }
+            else {
+                hidden.push(i);
+            }
+        });
         var trans = this._props.cellBaseSize + this._props.cellBeatMargin;
         switch (count) {
             case 0:
                 break;
             case 1:
-                this.animate(this._bitts[0], { translate: { x: 0, y: 0 }, scale: 1 }, 500);
+                this.animate(this._bitts[displayed[0]], { translate: { x: 0, y: 0 }, scale: 1 }, 500);
                 break;
             case 2:
-                this.animate(this._bitts[0], { scale: 1, translate: { x: trans * -0.5, y: 0 } }, 1500);
-                this.animate(this._bitts[1], { scale: 1, translate: { x: trans * 0.5, y: 0 } }, 1500);
+                this.animate(this._bitts[displayed[0]], { scale: 1, translate: { x: trans * -0.5, y: 0 } }, 1500);
+                this.animate(this._bitts[displayed[1]], { scale: 1, translate: { x: trans * 0.5, y: 0 } }, 1500);
                 break;
             case 3:
                 var step = 360 / count;
@@ -457,24 +497,24 @@ var Circlemap = (function () {
                 for (var j = 0, jl = count; j < jl; j++) {
                     this._radkit.setAngle(cap + step * j);
                     var axis = this._radkit.getPosition(0, 0, trans * 0.7);
-                    this.animate(this._bitts[j], { scale: 1, translate: { x: axis.x, y: axis.y } }, 1500);
+                    this.animate(this._bitts[displayed[j]], { scale: 1, translate: { x: axis.x, y: axis.y } }, 1500);
                 }
                 break;
             case 4:
             case 5:
             case 6:
-                this.animate(this._bitts[0], { scale: 1, translate: { x: 0, y: 0 } }, 1500);
+                this.animate(this._bitts[displayed[0]], { scale: 1, translate: { x: 0, y: 0 } }, 1500);
                 var step = 360 / (count - 1);
                 var cap = -90;
                 for (var j = 0, jl = count - 1; j < jl; j++) {
                     this._radkit.setAngle(cap + step * j);
                     var axis = this._radkit.getPosition(0, 0, trans);
-                    this.animate(this._bitts[j + 1], { scale: 1, translate: { x: axis.x, y: axis.y } }, 1500);
+                    this.animate(this._bitts[displayed[j + 1]], { scale: 1, translate: { x: axis.x, y: axis.y } }, 1500);
                 }
                 break;
         }
-        for (var i = count, il = this._bitts.length; i < il; i++) {
-            this.animate(this._bitts[i], { translate: { x: 0, y: 0 }, scale: 0.01 }, 500);
+        for (var i = count, il = hidden.length; i < il; i++) {
+            this.animate(this._bitts[hidden[i]], { translate: { x: 0, y: 0 }, scale: 0.01 }, 500);
         }
     };
     return Circlemap;
