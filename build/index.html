@@ -31,51 +31,75 @@
     
     map.addBitt({
         velocity:1,
-        translate:{x:0,y:0},
+        translate:{x:0,y:0+150},
+        scale:1,
         props:{
           icon:"images/01.jpg"  
         },
-        timeshift:0
+        timeshift:0,
+        onclick:function(arg){
+            alert(arg.props.icon);
+        }
     });
     map.addBitt({
         velocity:1,
-        translate:{x:210,y:-20},
+        translate:{x:250*(-1),y:0+150},
+        scale:1,
         props:{
           icon:"images/02.jpg"  
         },
-        timeshift:0.8
+        timeshift:0.8,
+        onclick:function(arg){
+            alert(arg.props.icon);
+        }
     });
     map.addBitt({
         velocity:1,
-        translate:{x:120,y:-180},
+        translate:{x:250*(1),y:0+150},
+        scale:1,
         props:{
           icon:"images/03.jpg"  
         },
-        timeshift:0.5
+        timeshift:0.5,
+        onclick:function(arg){
+            alert(arg.props.icon);
+        }
     });
     map.addBitt({
         velocity:1,
-        translate:{x:0,y:120},
+        translate:{x:0,y:0-150},
+        scale:1,
         props:{
           icon:"images/04.jpg"  
         },
-        timeshift:0.2
+        timeshift:0.2,
+        onclick:function(arg){
+            alert(arg.props.icon);
+        }
     });
     map.addBitt({
         velocity:1,
-        translate:{x:12,y:50},
+        translate:{x:250*(-1),y:0-150},
+        scale:1,
         props:{
           icon:"images/05.jpg"  
         },
-        timeshift:0.16
+        timeshift:0.16,
+        onclick:function(arg){
+            alert(arg.props.icon);
+        }
     });
     map.addBitt({
         velocity:1,
-        translate:{x:402,y:200},
+        translate:{x:250*(1),y:0-150},
+        scale:1,
         props:{
           icon:"images/06.jpg"  
         },
-        timeshift:0.4
+        timeshift:0.4,
+        onclick:function(arg){
+            alert(arg.props.icon);
+        }
     });
 </script>
 </body>

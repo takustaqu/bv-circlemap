@@ -5,6 +5,49 @@ if(!Vibrant){
     var Vibrant:any = false;
 }
 
+
+(function($) {
+
+    $.fn.setTouchStart = function(touchEventHandler) {
+
+        var isTouch = ('ontouchstart' in window);
+
+        // PC/SmartPhone両対応
+        $(this).die('touchstart');
+        $(this).live('touchstart', touchEventHandler);
+
+        $(this).die('mousedown');
+        $(this).live('mousedown', touchEventHandler);
+
+        // SmartPhoneでもmouseイベントを拾ってしまう端末が存在するため、 
+        // タッチできる環境(SmartPhone)であればマウス操作不可にする。
+        if(isTouch){
+            $(this).die('mousedown', touchEventHandler);
+        }
+
+    }
+
+    $.fn.setTouchEnd = function(touchEventHandler) {
+
+        var isTouch = ('ontouchstart' in window);
+
+        // PC/SmartPhone両対応
+        $(this).die('touchend');
+        $(this).live('touchend', touchEventHandler);
+
+        $(this).die('mouseup');
+        $(this).live('mouseup', touchEventHandler);
+
+        // SmartPhoneでもmouseイベントを拾ってしまう端末が存在するため、 
+        // タッチできる環境(SmartPhone)であればマウス操作不可にする。
+        if(isTouch){
+            $(this).die('mouseup', touchEventHandler);
+        }
+
+    }
+
+})(jQuery)
+
 interface Window {
     webkitRequestAnimationFrame(callback: FrameRequestCallback): number;
     mozRequestAnimationFrame(callback: FrameRequestCallback): number;
@@ -33,8 +76,11 @@ interface Bitt {
     color?:ColourRGB;
     type:string;
     props:any;
+    scale?:number;
+    scaleAnimationCache?:number;
     timeshift:number;
     frame:any; //frameごとに実行される関数を定義
+    onclick?:any;
 }
 
 
@@ -47,6 +93,8 @@ class Circlemap {
     private _bitts:Bitt[] = [];
     private _canvas:any = false;
     private _ctx:any = false;
+    private _touchAreaCanvas:any = false;
+    private _touchCtx:any = false;
     private _screenSize:Size = {w:0,h:0};
     private _props:any = {};
     
@@ -65,14 +113,46 @@ class Circlemap {
         
         this._props = {
             cellBaseSize:200,
-            cellBeatRailPadding:16
+            cellBeatRailPadding:0
         }
        
+       //DOM取得
         this._canvas = <HTMLCanvasElement>document.getElementById(options.canvasId);
         this._ctx = this._canvas.getContext("2d");
+        this._touchAreaCanvas = document.createElement("canvas");
+        this._touchCtx = this._touchAreaCanvas.getContext("2d");
+
         
+        //canvasのフィット処理
         this.fitCanvasSize();
         this.getCanvasSize();
+        
+        //クリックイベント実行
+        this._canvas.onmousedown = function(e){
+            e.preventDefault();
+            e.stopPropagation();
+            var code = $this.checkObjectIdFromAxis(e.offsetX,e.offsetY);
+            var target = $this._bitts[code];
+            if(!!target.onmousedown && typeof target.onmousedown == "function"){
+                target.onmousedown.call({},target);    
+            }
+            
+        }
+        
+        this._canvas.onmouseup = function(e){
+            e.preventDefault();
+            e.stopPropagation();
+            var code = $this.checkObjectIdFromAxis(e.offsetX,e.offsetY);
+            var target = $this._bitts[code];
+            if(!!target.onmouseup && typeof target.onmouseup == "function"){
+                target.onmouseup.call({},target);    
+            }
+            
+            if(!!target.onclick && typeof target.onclick == "function"){
+                target.onclick.call({},target);    
+            }
+        }
+        
         
         //console.log(this._ctx);
         
@@ -105,13 +185,15 @@ class Circlemap {
         
         
         
-        
+        var bpm = 120; 
+        var step = ((bpm/8)/60)/4/(1000/60);
         setInterval(function(){
-            $this._globalBeatRotate = $this._globalBeatRotate + (1/360);
+            $this._globalBeatRotate = $this._globalBeatRotate + step;
             if($this._globalBeatRotate > 1){
                 $this._globalBeatRotate = 0;
             }
-        },10)
+        },1000/60);
+        
     }
     
     addBitt(bitt:Bitt):Bitt{
@@ -142,18 +224,40 @@ class Circlemap {
         return bitt;
     }
     
-    bittDefaultDraw(bitt:Bitt,ctx:any,centerAxis:Axis){
+    
+    /*
+    タッチ領域の座標から、対象となるbittのidxを返す。
+     */
+    checkObjectIdFromAxis(x,y){
+        var touchCanvas = this._touchAreaCanvas;
+        var w = this._screenSize.w;
+        var h = this._screenSize.h;
+        var data = this._touchCtx.getImageData(0, 0, w, h).data;
+        var i = ((y * w) + x) * 4;
+        var r = ("0"+data[i].toString(16)).slice(-2);        
+        var g = ("0"+data[i+1].toString(16)).slice(-2);
+        var b = ("0"+data[i+2].toString(16)).slice(-2);
         
-        var translate = [bitt.translate.x + centerAxis.x, bitt.translate.y + centerAxis.y]
+        return parseInt(r+g+b,16)-1;
+    }
+   
+    
+    bittDefaultDraw(bitt:Bitt,ctx:any,centerAxis:Axis,i?:number){
+        
+        
+        var scale = !!bitt.scale ? (1/bitt.scale) : 1;
+        
+        var translate = [(bitt.translate.x + centerAxis.x)*scale, (bitt.translate.y + centerAxis.y)*scale];
             
         ctx.save();
-        
-        
+        ctx.scale(bitt.scale, bitt.scale);
         ctx.translate(translate[0],translate[1]);
         
         var size = this._props.cellBaseSize;
         var sizeHalf = size>>1;
+        var ballSize = 12;
         
+        //タイムラインの時間を作成(0-1 float);
         var curTime = this._globalBeatRotate + bitt.timeshift;
         
         if(curTime>1){
@@ -161,6 +265,7 @@ class Circlemap {
         }
         
         var curTime4x = (curTime * 4)%1;
+        var curTime8x = (curTime4x * 2)%1;
         
         
         //色を設定
@@ -173,12 +278,16 @@ class Circlemap {
         }
         
         
-        //ビート表示のレール部
+        //外周の放射エフェクト
         ctx.lineWidth = 2;
+        ctx.globalAlpha = 1-ease.linear(curTime4x,0,1,1);
         ctx.beginPath();
-            ctx.arc(0, 0, ease.easeOutQuart(curTime4x,sizeHalf,(sizeHalf*0.5),1), 0, Math.PI*2, false);
+            ctx.arc(0, 0, ease.easeOutQuart(curTime4x,sizeHalf,(sizeHalf*0.2),1), 0, Math.PI*2, false);
         ctx.closePath();
-        ctx.globalAlpha = 1-curTime4x;
+        ctx.stroke();
+        ctx.beginPath();
+            ctx.arc(0, 0, ease.linear(curTime4x,sizeHalf,(sizeHalf*0.2),1), 0, Math.PI*2, false);
+        ctx.closePath();
         ctx.stroke();
         ctx.globalAlpha = 1;
         
@@ -194,6 +303,7 @@ class Circlemap {
         ctx.restore();
         
         ctx.save();
+        ctx.scale(bitt.scale, bitt.scale);
         ctx.translate(translate[0],translate[1]);
         
         //色を設定
@@ -205,7 +315,7 @@ class Circlemap {
             ctx.fillStyle = "#999";    
         }
         
-        ctx.lineWidth = 3;
+        ctx.lineWidth = 5;
        
        
        //画像の外周 
@@ -214,30 +324,53 @@ class Circlemap {
         ctx.closePath();
         ctx.stroke();
         
-       //ビート表示のレール部
-       ctx.lineWidth = 1;
-        ctx.beginPath();
-            ctx.arc(0, 0, sizeHalf+this._props.cellBeatRailPadding, 0, Math.PI*2, false);
-        ctx.closePath();
-        ctx.globalAlpha = 0.5;
-        ctx.stroke();
-        ctx.globalAlpha = 1;
-        
         
         this._radkit.setAngle(360-curTime*360);
         var beatPos = this._radkit.getPosition(0,0,sizeHalf  +this._props.cellBeatRailPadding);
         
         ctx.beginPath();
-            ctx.arc(beatPos.x, beatPos.y, 8, 0, Math.PI*2, false);
+            ctx.arc(beatPos.x, beatPos.y, ballSize, 0, Math.PI*2, false);
         ctx.closePath();
         ctx.fill();
         
+        ctx.beginPath();
+            ctx.arc(beatPos.x, beatPos.y, ballSize*0.6, 0, Math.PI*2, false);
+        ctx.closePath();
+        ctx.fillStyle = "#fff";
+        ctx.globalAlpha = (1-curTime8x)*0.8;   
+        ctx.fill();
+        ctx.globalAlpha = 1;
+        
+        ctx.beginPath();
+            ctx.arc(beatPos.x, beatPos.y, ease.easeOutQuart(curTime8x,ballSize,ballSize*1,1) , 0, Math.PI*2, false);
+        ctx.closePath();
+        ctx.globalAlpha = 1-ease.linear(curTime8x,0,1,1);
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+        
         ctx.restore();
+        
+        /* ### 当たり判定Canvasの処理 ### */
+        
+        var tCtx = this._touchCtx;
+        tCtx.save();
+        tCtx.scale(bitt.scale, bitt.scale);
+        tCtx.translate(translate[0],translate[1]);
+        var col:string = "#"+("00000"+((i+1)*1).toString(16)).slice(-6);
+        tCtx.beginPath();
+            tCtx.arc(0, 0, sizeHalf, 0, Math.PI*2, false);
+        tCtx.closePath();
+        tCtx.fillStyle = col;
+        tCtx.fill();
+        tCtx.restore();
     }
     
     fitCanvasSize(){
         this._canvas.width = $(window).width();
         this._canvas.height = $(window).height();
+        
+        this._touchAreaCanvas.width = this._canvas.width;
+        this._touchAreaCanvas.height = this._canvas.height;
         this.getCanvasSize();
     }
     
@@ -270,7 +403,7 @@ class Circlemap {
         //ビッツを走査
         this._bitts.forEach(function(current,i,array){
             
-           $this.bittDefaultDraw(current,ctx,center);
+           $this.bittDefaultDraw(current,ctx,center,i);
            
         });
         
