@@ -89,6 +89,9 @@ class Circlemap {
         function bittEffectiveScale(target:Bitt,scalefrom,scaleto){
             var i=0;
             var end =10;
+            if(!target.scaleFx){
+                target.scaleFx = 1;
+            }
             var timer = setInterval(function(){
                 target.scaleFx = ease.easeOutQuart(i,scalefrom,scaleto-scalefrom,end);
                 if(i==end) clearInterval(timer);

@@ -47,11 +47,14 @@ class SonoMeasure {
         var position = current/(24*60*60*1000);
         
         return {
+            year:this._now.getFullYear(),
+            month:this._now.getMonth(),
+            date:this._now.getDate(),
             current:current,
             beatLength:beatLength,
             fullbeat:fullbeat,
             measure:measure,
-            beat:beat,
+            beat:beat+1,
             position:position,
         }
         //

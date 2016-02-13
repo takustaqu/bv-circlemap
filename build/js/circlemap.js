@@ -90,6 +90,9 @@ var Circlemap = (function () {
         function bittEffectiveScale(target, scalefrom, scaleto) {
             var i = 0;
             var end = 10;
+            if (!target.scaleFx) {
+                target.scaleFx = 1;
+            }
             var timer = setInterval(function () {
                 target.scaleFx = ease.easeOutQuart(i, scalefrom, scaleto - scalefrom, end);
                 if (i == end)
@@ -373,11 +376,14 @@ var SonoMeasure = (function () {
         var beat = fullbeat % 4;
         var position = current / (24 * 60 * 60 * 1000);
         return {
+            year: this._now.getFullYear(),
+            month: this._now.getMonth(),
+            date: this._now.getDate(),
             current: current,
             beatLength: beatLength,
             fullbeat: fullbeat,
             measure: measure,
-            beat: beat,
+            beat: beat + 1,
             position: position
         };
         //

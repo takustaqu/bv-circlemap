@@ -1,0 +1,22 @@
+{
+  "name": "speeddemon",
+  "version": "0.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Yabu Kiyohide",
+  "license": "KKK(Kirinsan Kattenishiyagare Kusoga License)",
+  "bugs": {
+    "url": ""
+  },
+  "dependencies": {
+    "browser-sync": "^1.9.2",
+    "gulp": "^3.8.5",
+    "gulp-pleeease": "^1.2.0",
+    "gulp-sass": "^2.0.4",
+    "gulp-typescript": "^2.10.0"
+  }
+}
