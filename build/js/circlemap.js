@@ -56,7 +56,7 @@ var Circlemap = (function () {
         this._radkit = new Radkit();
         this._props = {
             cellBaseSize: 200,
-            cellBeatRailPadding: 10
+            cellBeatRailPadding: 16
         };
         this._canvas = document.getElementById(options.canvasId);
         this._ctx = this._canvas.getContext("2d");
@@ -87,6 +87,9 @@ var Circlemap = (function () {
         drawLoop();
         setInterval(function () {
             $this._globalBeatRotate--;
+            if ($this._globalBeatRotate > 360) {
+                $this._globalBeatRotate = 0;
+            }
         }, 10);
     }
     Circlemap.prototype.addBitt = function (bitt) {
@@ -94,6 +97,19 @@ var Circlemap = (function () {
         if (!!bitt.props.icon && typeof bitt.props.icon == "string") {
             bitt.props.$icon = document.createElement("img");
             bitt.props.$icon.src = bitt.props.icon;
+            if (!bitt.props.color && !!Vibrant) {
+                //Vibrant.jsが有効でかつcolor指定がない場合、画像から自動的に色を取得
+                bitt.props.$icon.addEventListener('load', function () {
+                    var vibrant = new Vibrant(bitt.props.$icon);
+                    var swatches = vibrant.swatches();
+                    var rgb = swatches["Vibrant"].getRgb();
+                    bitt.color = {
+                        r: rgb[0],
+                        g: rgb[1],
+                        b: rgb[2]
+                    };
+                });
+            }
         }
         this._bitts.push(bitt);
         return bitt;
@@ -114,8 +130,14 @@ var Circlemap = (function () {
         ctx.restore();
         ctx.save();
         ctx.translate(translate[0], translate[1]);
-        ctx.strokeStyle = "#999";
-        ctx.fillStyle = "#999";
+        if (!!bitt.color) {
+            ctx.strokeStyle = "rgb(" + bitt.color.r + "," + bitt.color.g + "," + bitt.color.b + ")";
+            ctx.fillStyle = "rgb(" + bitt.color.r + "," + bitt.color.g + "," + bitt.color.b + ")";
+        }
+        else {
+            ctx.strokeStyle = "#999";
+            ctx.fillStyle = "#999";
+        }
         ctx.lineWidth = 3;
         //画像の外周 
         ctx.beginPath();
