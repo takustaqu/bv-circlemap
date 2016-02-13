@@ -33,6 +33,7 @@ interface Bitt {
     color?:ColourRGB;
     type:string;
     props:any;
+    timeshift:number;
     frame:any; //frameごとに実行される関数を定義
 }
 
@@ -106,8 +107,8 @@ class Circlemap {
         
         
         setInterval(function(){
-            $this._globalBeatRotate--;
-            if($this._globalBeatRotate > 360){
+            $this._globalBeatRotate = $this._globalBeatRotate + (1/360);
+            if($this._globalBeatRotate > 1){
                 $this._globalBeatRotate = 0;
             }
         },10)
@@ -153,6 +154,36 @@ class Circlemap {
         var size = this._props.cellBaseSize;
         var sizeHalf = size>>1;
         
+        var curTime = this._globalBeatRotate + bitt.timeshift;
+        
+        if(curTime>1){
+            curTime = curTime - 1;
+        }
+        
+        var curTime4x = (curTime * 4)%1;
+        
+        
+        //色を設定
+        if(!!bitt.color){
+            ctx.strokeStyle = `rgb(${bitt.color.r},${bitt.color.g},${bitt.color.b})`;
+            ctx.fillStyle = `rgb(${bitt.color.r},${bitt.color.g},${bitt.color.b})`;
+        }else{
+            ctx.strokeStyle = "#999";
+            ctx.fillStyle = "#999";    
+        }
+        
+        
+        //ビート表示のレール部
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+            ctx.arc(0, 0, ease.easeOutQuart(curTime4x,sizeHalf,(sizeHalf*0.5),1), 0, Math.PI*2, false);
+        ctx.closePath();
+        ctx.globalAlpha = 1-curTime4x;
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+        
+        
+        //アイコンの描画
         ctx.beginPath();
             ctx.arc(0, 0, sizeHalf, 0, Math.PI*2, false);
         ctx.closePath();
@@ -165,6 +196,7 @@ class Circlemap {
         ctx.save();
         ctx.translate(translate[0],translate[1]);
         
+        //色を設定
         if(!!bitt.color){
             ctx.strokeStyle = `rgb(${bitt.color.r},${bitt.color.g},${bitt.color.b})`;
             ctx.fillStyle = `rgb(${bitt.color.r},${bitt.color.g},${bitt.color.b})`;
@@ -187,9 +219,12 @@ class Circlemap {
         ctx.beginPath();
             ctx.arc(0, 0, sizeHalf+this._props.cellBeatRailPadding, 0, Math.PI*2, false);
         ctx.closePath();
+        ctx.globalAlpha = 0.5;
         ctx.stroke();
+        ctx.globalAlpha = 1;
         
-        this._radkit.setAngle(this._globalBeatRotate);
+        
+        this._radkit.setAngle(360-curTime*360);
         var beatPos = this._radkit.getPosition(0,0,sizeHalf  +this._props.cellBeatRailPadding);
         
         ctx.beginPath();
