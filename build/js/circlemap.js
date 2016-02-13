@@ -1,3 +1,45 @@
+/*
+
+Radkit.js by [ow;d]
+
+*/
+var Radkit = (function () {
+    function Radkit() {
+        this._rotate = 0;
+        this._cos = false;
+        this._sin = false;
+        this._angle = 0;
+        this._shapeRatio = { x: 1, y: 1 };
+        this._rad = 0;
+    }
+    Radkit.prototype.setAngle = function (angle) {
+        this._angle = (angle %= 360);
+        this._rad = angle * Math.PI / 180;
+        this._cos = Math.cos(this._rad);
+        this._sin = Math.sin(this._rad);
+        return {
+            rad: this._rad,
+            cos: this._cos,
+            sin: this._sin,
+            angle: this._angle
+        };
+    };
+    Radkit.prototype.setShapeRatio = function (w, h) {
+        this._shapeRatio = { x: w, y: h };
+    };
+    Radkit.prototype.getPosition = function (x, y, strength) {
+        if (this._cos) {
+            return {
+                x: this._cos * (strength * this._shapeRatio.y) * -1 + x,
+                y: this._sin * (strength * this._shapeRatio.x) + y
+            };
+        }
+        else {
+            return false;
+        }
+    };
+    return Radkit;
+})();
 /// <reference path="d_ts/jquery.d.ts" />
 /// <reference path="d_ts/waa.d.ts" />
 var Circlemap = (function () {
@@ -6,8 +48,13 @@ var Circlemap = (function () {
         this._canvas = false;
         this._ctx = false;
         this._screenSize = { w: 0, h: 0 };
+        this._props = {};
         var defaultOption = {
             canvasId: "circlemap"
+        };
+        this.props = {
+            cellBaseSize: 200,
+            cellBeatRailPadding: 10
         };
         this._canvas = document.getElementById(options.canvasId);
         this._ctx = this._canvas.getContext("2d");
@@ -39,19 +86,27 @@ var Circlemap = (function () {
         var translate = [bitt.translate.x + centerAxis.x, bitt.translate.y + centerAxis.y];
         ctx.save();
         ctx.translate(translate[0], translate[1]);
-        var size = 60;
+        var size = this.props.cellBaseSize;
         var sizeHalf = size >> 1;
+        ctx.beginPath();
         ctx.arc(0, 0, sizeHalf, 0, Math.PI * 2, false);
+        ctx.closePath();
         ctx.clip();
         if (!!bitt.props.$icon) {
             ctx.drawImage(bitt.props.$icon, sizeHalf * -1, sizeHalf * -1, size, size);
         }
         ctx.restore();
         ctx.save();
-        ctx.beginPath();
         ctx.translate(translate[0], translate[1]);
+        ctx.strokeStyle = "#999";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
         ctx.arc(0, 0, sizeHalf, 0, Math.PI * 2, false);
-        ctx.strokeStyle = "#F00";
+        ctx.closePath();
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(0, 0, sizeHalf + this.props.cellBeatRailPadding, 0, Math.PI * 2, false);
+        ctx.closePath();
         ctx.stroke();
         ctx.restore();
     };
@@ -88,3 +143,7 @@ var Circlemap = (function () {
     };
     return Circlemap;
 })();
+/// <reference path="d_ts/jquery.d.ts" />
+/// <reference path="d_ts/waa.d.ts" />
+/// <reference path="_radkit.ts" />
+/// <reference path="_circlemap.ts" />
