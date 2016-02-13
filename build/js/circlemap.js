@@ -103,6 +103,8 @@ var Circlemap = (function () {
         //クリックイベント実行
         this._canvas.onmousedown = function (e) {
             var code = $this.checkObjectIdFromAxis(e.offsetX, e.offsetY);
+            if (code == -1)
+                return false;
             var target = $this._bitts[code];
             bittEffectiveScale(target, 1, 0.9);
             if (!!target.onmousedown && typeof target.onmousedown == "function") {
@@ -111,6 +113,8 @@ var Circlemap = (function () {
         };
         this._canvas.ontouchstart = function (e) {
             var code = $this.checkObjectIdFromAxis(e.offsetX, e.offsetY);
+            if (code == -1)
+                return false;
             var target = $this._bitts[code];
             bittEffectiveScale(target, 1, 0.9);
             alert("console.log");
@@ -120,6 +124,8 @@ var Circlemap = (function () {
         };
         this._canvas.onmouseup = function (e) {
             var code = $this.checkObjectIdFromAxis(e.offsetX, e.offsetY);
+            if (code == -1)
+                return false;
             var target = $this._bitts[code];
             bittEffectiveScale(target, 0.9, 1);
             if (!!target.onmouseup && typeof target.onmouseup == "function") {
@@ -131,6 +137,8 @@ var Circlemap = (function () {
         };
         this._canvas.ontouchend = function (e) {
             var code = $this.checkObjectIdFromAxis(e.offsetX, e.offsetY);
+            if (code == -1)
+                return false;
             var target = $this._bitts[code];
             bittEffectiveScale(target, 0.9, 1);
             if (!!target.onmouseup && typeof target.onmouseup == "function") {
@@ -256,6 +264,41 @@ var Circlemap = (function () {
         if (!!bitt.props.$icon) {
             ctx.drawImage(bitt.props.$icon, sizeHalf * -1, sizeHalf * -1, size, size);
         }
+        if (!!bitt.waveform) {
+            ctx.beginPath();
+            ctx.moveTo(curTime * size - sizeHalf, -sizeHalf);
+            ctx.lineTo(curTime * size - sizeHalf, sizeHalf);
+            ctx.strokeStyle = "rgba(100,0,0,0.1)";
+            ctx.lineWidth = 5;
+            ctx.stroke();
+            ctx.strokeStyle = "rgba(255,0,0,0.5)";
+            ctx.lineWidth = 1;
+            ctx.stroke();
+            //ctx.globalCompositeOperation = "xor";
+            if (!!bitt.color) {
+                ctx.strokeStyle = "rgb(" + (256 - bitt.color.r) + "," + (256 - bitt.color.g) + "," + (256 - bitt.color.b) + ")";
+            }
+            var seg = size / bitt.waveform.length;
+            ctx.beginPath();
+            bitt.waveform.forEach(function (curr, i) {
+                var y = curr * 4;
+                if (i == 0) {
+                    ctx.moveTo(0 - sizeHalf, y);
+                }
+                else {
+                    ctx.lineTo(seg * i - sizeHalf, y);
+                }
+            });
+            ctx.lineWidth = 1;
+            ctx.stroke();
+        }
+        //色を設定
+        if (!!bitt.color) {
+            ctx.strokeStyle = "rgb(" + bitt.color.r + "," + bitt.color.g + "," + bitt.color.b + ")";
+        }
+        else {
+            ctx.strokeStyle = "#999";
+        }
         ctx.restore();
         ctx.save();
         ctx.scale(scale, scale);
@@ -321,6 +364,54 @@ var Circlemap = (function () {
             h: this._canvas.height
         };
         return this._screenSize;
+    };
+    Circlemap.prototype.animate = function (bitt, param, duration) {
+        var i = 0;
+        var frame = Math.floor(duration / 60);
+        console.log(bitt);
+        var origin = {}; //原点を保存
+        origin.translate = {};
+        if (typeof param.scale == "number") {
+            origin.scale = bitt.scale;
+        }
+        if (typeof param.scaleFx == "number") {
+            origin.scaleFx = bitt.scaleFx;
+        }
+        if (!!param.translate && typeof param.translate.x == "number") {
+            origin.translate.x = bitt.translate.x;
+        }
+        if (!!param.translate && typeof param.translate.y == "number") {
+            origin.translate.y = bitt.translate.y;
+        }
+        var timer = setInterval(function () {
+            if (typeof param.scale == "number") {
+                bitt.scale = ease.easeOutQuart(i, origin.scale, param.scale - origin.scale, frame);
+            }
+            if (typeof param.scaleFx == "number") {
+                bitt.scaleFx = ease.easeOutQuart(i, origin.scaleFx, param.scaleFx - origin.scaleFx, frame);
+            }
+            if (!!param.translate && typeof param.translate.x == "number") {
+                console.log(param.translate.x, origin.translate.x);
+                bitt.translate.x = ease.easeOutQuart(i, origin.translate.x, param.translate.x - origin.translate.x, frame);
+            }
+            if (!!param.translate && typeof param.translate.y == "number") {
+                bitt.translate.y = ease.easeOutQuart(i, origin.translate.y, param.translate.y - origin.translate.y, frame);
+            }
+            if (i == frame) {
+                clearInterval(timer);
+            }
+            ;
+            i++;
+        }, 1000 / 60);
+        var func = {
+            halt: function () {
+                clearInterval(timer);
+                bitt.scale = param.scale;
+                bitt.scaleFx = param.scaleFx;
+                bitt.translate.x = param.translate.x;
+                bitt.translate.y = param.translate.y;
+            }
+        };
     };
     /**
      * 描画処理
