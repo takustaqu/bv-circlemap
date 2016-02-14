@@ -8,6 +8,19 @@ body {
     background-image: url("/images/bg.jpg");
     background-position:center;
     background-size:cover;
+    position: relative;
+    
+    &:after {
+        content:"";
+        background-image:url('/images/logo.png');
+        right:8px;
+        top:8px;
+        opacity:0.5;
+        width:120px;
+        height:100px;
+                background-position:center top;
+    background-size:cover; 
+    }
 }
 
 div {
